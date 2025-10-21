@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline Builder - Signal Processing App</title>
+    <link rel="stylesheet" href="../src/css/styles.css">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">📊 Spectracular.io</div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="visualization.html">Visualization</a>
+                <a href="pipeline.html" class="active">Pipeline Builder</a>
+                <a href="#docs">Docs</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <div class="pipeline-layout">
+            <!-- Left Panel: Pipeline Steps -->
+            <aside class="pipeline-sidebar">
+                <h2>Pipeline Steps</h2>
+                
+                <div class="add-filter-section">
+                    <select id="filterTypeSelect" class="input-field">
+                        <option value="">-- Select Filter --</option>
+                        <option value="detrend">Detrend</option>
+                        <option value="normalize">Normalize</option>
+                        <option value="standardize">Standardize</option>
+                        <option value="butterworth_lowpass">Butterworth Lowpass</option>
+                        <option value="butterworth_highpass">Butterworth Highpass</option>
+                        <option value="butterworth_bandpass">Butterworth Bandpass</option>
+                        <option value="butterworth_bandstop">Butterworth Bandstop</option>
+                        <option value="savgol">Savitzky-Golay</option>
+                        <option value="median">Median Filter</option>
+                        <option value="notch">Notch Filter</option>
+                        <option value="moving_average">Moving Average</option>
+                    </select>
+                    <button id="addFilterBtn" class="btn btn-primary">Add Step</button>
+                </div>
+
+                <div id="pipelineList" class="pipeline-list"></div>
+
+                <div class="pipeline-actions">
+                    <button id="savePipeline" class="btn btn-secondary">Save Pipeline</button>
+                    <button id="loadPipeline" class="btn btn-secondary">Load Pipeline</button>
+                    <button id="clearPipeline" class="btn btn-secondary">Clear All</button>
+                </div>
+
+                <div class="info-box">
+                    <p>💡 Drag steps to reorder</p>
+                    <p>✏️ Click step to edit parameters</p>
+                    <p>👁️ Toggle to enable/disable</p>
+                </div>
+            </aside>
+
+            <!-- Center: Plot Comparison -->
+            <div class="pipeline-center">
+                <div class="channel-selector">
+                    <label>Processing Channel:</label>
+                    <select id="processingChannel" class="input-field"></select>
+                </div>
+
+                <div class="plot-comparison">
+                    <div class="plot-container">
+                        <div class="plot-header">
+                            <h3>Original Signal</h3>
+                        </div>
+                        <div id="originalPlot" class="plot"></div>
+                    </div>
+
+                    <div class="plot-container">
+                        <div class="plot-header">
+                            <h3>Processed Signal</h3>
+                        </div>
+                        <div id="processedPlot" class="plot"></div>
+                    </div>
+                </div>
+
+                <div class="pipeline-controls">
+                    <button id="applyPipeline" class="btn btn-primary">Apply Pipeline</button>
+                    <button id="exportProcessed" class="btn btn-secondary">Export Processed CSV</button>
+                    <button id="exportCode" class="btn btn-secondary">Export Python Code</button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Step Parameters -->
+            <aside class="params-sidebar">
+                <h2>Step Parameters</h2>
+                <div id="paramPanel" class="param-panel">
+                    <p class="param-placeholder">Select a pipeline step to edit its parameters</p>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <style>
+        .pipeline-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            gap: 1.5rem;
+            min-height: calc(100vh - 150px);
+        }
+
+        .pipeline-sidebar,
+        .params-sidebar {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 12px;
+            height: fit-content;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            position: sticky;
+            top: 80px;
+        }
+
+        .pipeline-sidebar h2,
+        .params-sidebar h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+        }
+
+        .add-filter-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .add-filter-section select {
+            margin-bottom: 0.75rem;
+        }
+
+        .pipeline-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .pipeline-step {
+            background: var(--surface-light);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
+            cursor: move;
+            transition: all 0.2s;
+        }
+
+        .pipeline-step:hover {
+            background: #244060;
+            transform: translateX(3px);
+        }
+
+        .pipeline-step.selected {
+            border-left-color: var(--success);
+            background: #244060;
+        }
+
+        .pipeline-step.disabled {
+            opacity: 0.5;
+        }
+
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .step-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .step-toggle {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .step-delete {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .step-params {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .pipeline-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .pipeline-center {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .channel-selector {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .channel-selector label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .channel-selector select {
+            flex: 1;
+        }
+
+        .plot-comparison {
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .plot-container {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 12px;
+        }
+
+        .plot-header h3 {
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .plot {
+            width: 100%;
+            height: 300px;
+            border-radius: 8px;
+        }
+
+        .pipeline-controls {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .pipeline-controls button {
+            flex: 1;
+        }
+
+        .param-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .param-placeholder {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem 1rem;
+        }
+
+        .param-group {
+            margin-bottom: 1rem;
+        }
+
+        .param-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .param-value {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-left: 0.5rem;
+        }
+
+        @media (max-width: 1280px) {
+            .pipeline-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .pipeline-sidebar,
+            .params-sidebar {
+                position: relative;
+                top: 0;
+                max-height: none;
+            }
+        }
+    </style>
+
+    <script type="module" src="../src/js/pipeline.js"></script>
+</body>
+</html>

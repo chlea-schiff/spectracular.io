@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signal Processing App</title>
+    <link rel="stylesheet" href="../src/css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">📊 Spectracular.io</div>
+            <div class="nav-links">
+                <a href="index.html" class="active">Home</a>
+                <a href="visualization.html">Visualization</a>
+                <a href="pipeline.html">Pipeline Builder</a>
+                <a href="#docs">Docs</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <section class="hero">
+            <h1>Process Neural & Physiological Signals</h1>
+            <p>Upload, visualize, and preprocess your data — all in your browser</p>
+        </section>
+
+        <section class="upload-section">
+            <div class="upload-card">
+                <h2>Get Started</h2>
+                <div id="dropzone" class="dropzone">
+                    <div class="dropzone-content">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p class="dropzone-text">Drag & drop your CSV file here</p>
+                        <p class="dropzone-subtext">or click to browse</p>
+                        <input type="file" id="fileInput" accept=".csv,.txt" style="display: none;">
+                    </div>
+                </div>
+
+                <button id="loadDemo" class="btn btn-secondary">Load Demo Data</button>
+            </div>
+
+            <div id="fileInfo" class="file-info" style="display: none;">
+                <h3>File Loaded</h3>
+                <p><strong>Name:</strong> <span id="fileName"></span></p>
+                <p><strong>Size:</strong> <span id="fileSize"></span></p>
+                <p><strong>Rows:</strong> <span id="fileRows"></span></p>
+            </div>
+        </section>
+
+        <div id="previewModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Configure Your Data</h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="config-section">
+                        <label>Timestamp Column:</label>
+                        <select id="timestampCol" class="input-field"></select>
+                    </div>
+                    
+                    <div class="config-section">
+                        <label>Signal Channels:</label>
+                        <div id="channelCheckboxes" class="checkbox-group"></div>
+                    </div>
+                    
+                    <div class="config-section">
+                        <label>Sampling Rate (Hz):</label>
+                        <input type="number" id="samplingRate" class="input-field" value="250" min="1">
+                    </div>
+
+                    <div class="preview-table-container">
+                        <h3>Data Preview</h3>
+                        <div id="previewTable"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btnVisualize" class="btn btn-primary">Go to Visualization</button>
+                    <button id="btnPipeline" class="btn btn-primary">Go to Pipeline Builder</button>
+                </div>
+            </div>
+        </div>
+
+        <section class="features">
+            <h2>Features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Time & Frequency Analysis</h3>
+                    <p>Interactive plots with zoom, pan, and FFT visualization</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔧</div>
+                    <h3>Flexible Preprocessing</h3>
+                    <p>Build custom filter pipelines with drag-and-drop reordering</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <h3>Export Ready</h3>
+                    <p>Download processed data and visualizations</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Browser-Based</h3>
+                    <p>No installation required, process data locally</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2025 Spectracular.io. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script type="module" src="../src/js/main.js"></script>
+</body>
+</html>
