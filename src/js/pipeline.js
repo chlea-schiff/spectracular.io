@@ -234,9 +234,11 @@ function selectStep(id) {
 
 function renderParamPanel() {
     const panel = document.getElementById('paramPanel');
+    const content = document.getElementById('paramContent');
     
     if (!selectedStepId) {
-        panel.innerHTML = '<p class="param-placeholder">Select a pipeline step to edit its parameters</p>';
+        panel.classList.remove('active');
+        content.innerHTML = '<p class="param-placeholder">Select a pipeline step to edit its parameters</p>';
         return;
     }
 
@@ -245,8 +247,10 @@ function renderParamPanel() {
 
     const config = filterConfigs[step.type];
     
+    panel.classList.add('active');
+    
     if (!config.params || config.params.length === 0) {
-        panel.innerHTML = `
+        content.innerHTML = `
             <h3>${step.name}</h3>
             <p class="param-placeholder">This filter has no configurable parameters</p>
         `;
@@ -276,8 +280,15 @@ function renderParamPanel() {
         `;
     });
 
-    panel.innerHTML = html;
+    content.innerHTML = html;
 }
+
+// Add this new function
+window.closeParamPanel = function() {
+    selectedStepId = null;
+    renderPipeline();
+    renderParamPanel();
+};
 
 window.updateParam = function(stepId, param, value) {
     const step = pipeline.find(s => s.id === stepId);
