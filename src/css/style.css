@@ -24,14 +24,14 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #404040;
-    color: #eee;
+    background: #404040 !important;
+    color: #eee !important;
     padding: 20px;
 }
 
 /* Navbar */
 .navbar {
-    background: var(--secondary);
+    background: #404040 !important;
     padding: 1rem 0;
     box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     position: sticky;
@@ -51,7 +51,7 @@ body {
 .nav-brand {
     font-size: 1.5rem;
     font-weight: bold;
-    color: var(--primary);
+    color: #14786e !important;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -97,7 +97,7 @@ body {
 }
 
 .sidebar {
-    background: #4a4a4a;
+    background: #4a4a4a !important;
     padding: 20px;
     border-radius: 8px;
     height: fit-content;
@@ -176,9 +176,9 @@ body {
 }
 
 .upload-icon {
-    width: 24px;
-    height: 24px;
-    color: var(--primary);
+    width: 24px !important;
+    height: 24px !important;
+    color: #14786e !important;
 }
 
 .dropzone-text {
