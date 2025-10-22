@@ -25,54 +25,62 @@
 
     <div class="container">
         <div class="sidebar">
-                <h2>Controls</h2>
-                
-                <div class="control-section">
-                    <h3>Channels</h3>
-                    <div id="channelToggles" class="checkbox-group-vertical"></div>
-                </div>
+            <h2>Visualization</h2>
+            
+            <div class="control-section">
+                <h3>Channels</h3>
+                <div id="channelToggles" class="checkbox-group-vertical"></div>
+            </div>
 
-                <div class="control-section">
-                    <h3>Display Options</h3>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="stackedPlot" checked>
-                        <span>Stacked Subplots</span>
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="showGrid" checked>
-                        <span>Show Grid</span>
-                    </label>
-                </div>
+            <div class="control-section">
+                <h3>Display Options</h3>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="stackedPlot" checked>
+                    <span>Stacked Subplots</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="showGrid" checked>
+                    <span>Show Grid</span>
+                </label>
+            </div>
 
-                <div class="control-section">
-                    <h3>Time Range (seconds)</h3>
-                    <label>Start:</label>
-                    <input type="number" id="timeStart" class="input-field" value="0" step="0.1" min="0">
-                    <label>End:</label>
-                    <input type="number" id="timeEnd" class="input-field" value="10" step="0.1" min="0">
-                    <button id="applyTimeRange" class="btn btn-primary">Apply</button>
-                </div>
+            <div class="control-section">
+                <h3>Time Range</h3>
+                <label>Start:</label>
+                <input type="number" id="timeStart" class="input-field" value="0" step="0.1" min="0">
+                <label>End:</label>
+                <input type="number" id="timeEnd" class="input-field" value="10" step="0.1" min="0">
+                <button id="applyTimeRange" class="btn btn-primary">Apply</button>
+            </div>
 
-                <div class="control-section">
-                    <h3>FFT Options</h3>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="logScale">
-                        <span>Log Scale</span>
-                    </label>
-                    <label>Max Frequency (Hz):</label>
-                    <input type="number" id="maxFreq" class="input-field" value="125" min="1">
-                </div>
+            <div class="control-section">
+                <h3>X-Axis Format</h3>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="convertTimestamps">
+                    <span>Convert to Date/Time</span>
+                </label>
+            </div>
 
-                <div class="control-section">
-                    <button id="exportCSV" class="btn btn-secondary">Export Data (CSV)</button>
-                    <button id="exportPlot" class="btn btn-secondary">Export Plot (PNG)</button>
-                </div>
+            <div class="control-section">
+                <h3>FFT Options</h3>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="logScale">
+                    <span>Log Scale</span>
+                </label>
+                <label>Max Frequency (Hz):</label>
+                <input type="number" id="maxFreq" class="input-field" value="125" min="1">
+            </div>
 
-                <div class="info-box">
-                    <p><strong>File:</strong> <span id="fileNameDisplay"></span></p>
-                    <p><strong>Sampling Rate:</strong> <span id="samplingRateDisplay"></span> Hz</p>
-                    <p><strong>Duration:</strong> <span id="durationDisplay"></span> s</p>
-                </div>
+            <div class="control-section">
+                <button id="exportCSV" class="btn btn-secondary">Export Data (CSV)</button>
+                <button id="exportPlot" class="btn btn-secondary">Export Plot (PNG)</button>
+            </div>
+
+            <div class="info-box">
+                <p><strong>File:</strong> <span id="fileNameDisplay"></span></p>
+                <p><strong>Sampling Rate:</strong> <span id="samplingRateDisplay"></span> Hz</p>
+                <p><strong>Duration:</strong> <span id="durationDisplay"></span> s</p>
+            </div>
         </div>
 
         <div class="main">
@@ -153,176 +161,6 @@
         }
     </style>
 
-    <script>
-        let eegData = [];
-        let samplingRate = 250;
-        let timeChart, fftChart;
-        let zoomState = { time: { start: 0, end: 1 }, fft: { start: 0, end: 1 } };
-
-        // Initialize with demo data
-        function initDemoData() {
-            const duration = 10; // seconds
-            const sampleCount = duration * samplingRate;
-            eegData = [];
-            
-            for (let i = 0; i < sampleCount; i++) {
-                const t = i / samplingRate;
-                // Generate synthetic EEG-like signal with noise
-                const signal = Math.sin(2 * Math.PI * 10 * t) + 
-                              0.5 * Math.sin(2 * Math.PI * 25 * t) + 
-                              0.3 * Math.sin(2 * Math.PI * 50 * t) + 
-                              (Math.random() - 0.5) * 0.5;
-                eegData.push(signal);
-            }
-            
-            // Update info display
-            document.getElementById('fileNameDisplay').textContent = 'Demo Data';
-            document.getElementById('samplingRateDisplay').textContent = samplingRate;
-            document.getElementById('durationDisplay').textContent = duration;
-            
-            initCharts();
-            updatePlots();
-        }
-
-        function initCharts() {
-            const ctx1 = document.getElementById('timeChart').getContext('2d');
-            const ctx2 = document.getElementById('fftChart').getContext('2d');
-
-            const chartOptions = {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: { duration: 0 },
-                plugins: { 
-                    legend: { display: false },
-                    filler: { propagate: false }
-                },
-                scales: {
-                    x: { display: true, type: 'linear' },
-                    y: { 
-                        display: true,
-                        beginAtZero: false
-                    }
-                }
-            };
-
-            timeChart = new Chart(ctx1, {
-                type: 'line',
-                data: { 
-                    labels: [],
-                    datasets: [{ 
-                        label: 'Time Domain', 
-                        data: [],
-                        borderColor: '#14786e', 
-                        tension: 0, 
-                        borderWidth: 1, 
-                        pointRadius: 0,
-                        fill: false,
-                        parsing: false
-                    }] 
-                },
-                options: chartOptions
-            });
-
-            fftChart = new Chart(ctx2, {
-                type: 'line',
-                data: { 
-                    labels: [],
-                    datasets: [{ 
-                        label: 'FFT', 
-                        data: [],
-                        borderColor: '#14786e', 
-                        tension: 0, 
-                        borderWidth: 1, 
-                        pointRadius: 0,
-                        fill: false,
-                        parsing: false
-                    }] 
-                },
-                options: chartOptions
-            });
-        }
-
-        function getVisibleRange(type) {
-            const zoom = zoomState[type];
-            const total = eegData.length;
-            return [Math.floor(zoom.start * total), Math.floor(zoom.end * total)];
-        }
-
-        function updatePlots() {
-            const [timeStart, timeEnd] = getVisibleRange('time');
-            const timeSlice = eegData.slice(timeStart, timeEnd);
-
-            // Create time domain data points
-            const timePoints = Array.from({ length: timeSlice.length }, (_, i) => ({ 
-                x: (timeStart + i) / samplingRate, 
-                y: timeSlice[i] 
-            }));
-
-            // Calculate FFT
-            const fftData = calculateFFT(eegData);
-            const [fftStart, fftEnd] = getVisibleRange('fft');
-            const fftSlice = fftData.slice(fftStart, fftEnd);
-
-            // Create frequency domain data points
-            const fftPoints = Array.from({ length: fftSlice.length }, (_, i) => ({ 
-                x: (fftStart + i) * samplingRate / eegData.length, 
-                y: fftSlice[i] 
-            }));
-
-            // Update time chart
-            timeChart.data.labels = [];
-            timeChart.data.datasets[0].data = timePoints;
-            timeChart.update('none');
-
-            // Update FFT chart
-            fftChart.data.labels = [];
-            fftChart.data.datasets[0].data = fftPoints;
-            fftChart.update('none');
-        }
-
-        function calculateFFT(signal) {
-            // Simple FFT approximation using DFT
-            const N = signal.length;
-            const fft = new Array(N);
-            
-            for (let k = 0; k < N; k++) {
-                let real = 0;
-                let imag = 0;
-                
-                for (let n = 0; n < N; n++) {
-                    const angle = -2 * Math.PI * k * n / N;
-                    real += signal[n] * Math.cos(angle);
-                    imag += signal[n] * Math.sin(angle);
-                }
-                
-                fft[k] = Math.sqrt(real * real + imag * imag);
-            }
-            
-            return fft.slice(0, Math.floor(N / 2)); // Return only positive frequencies
-        }
-
-        function zoomChart(type, action) {
-            const zoom = zoomState[type];
-            const range = zoom.end - zoom.start;
-
-            switch (action) {
-                case 'in':
-                    zoom.start += range * 0.2;
-                    zoom.end -= range * 0.2;
-                    break;
-                case 'out':
-                    zoom.start = Math.max(0, zoom.start - range * 0.2);
-                    zoom.end = Math.min(1, zoom.end + range * 0.2);
-                    break;
-                case 'reset':
-                    zoom.start = 0;
-                    zoom.end = 1;
-            }
-            updatePlots();
-        }
-
-        // Initialize when page loads
-        window.addEventListener('load', initDemoData);
-    </script>
+    <script type="module" src="js/visualization-interactive.js"></script>
 </body>
 </html>

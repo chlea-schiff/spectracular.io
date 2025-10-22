@@ -1,5 +1,7 @@
 // pipeline.js - Pipeline builder logic
 
+import { downloadFile } from './utils.js';
+
 let appState = null;
 let pipeline = [];
 let selectedStepId = null;
@@ -90,6 +92,13 @@ function loadAppState() {
         `<option value="${ch}">${ch}</option>`
     ).join('');
     channelSelect.value = currentChannel;
+
+    // Update info display
+    document.getElementById('fileNameDisplay').textContent = appState.fileName;
+    document.getElementById('samplingRateDisplay').textContent = appState.samplingRate;
+    
+    const duration = (appState.parsedData.length / appState.samplingRate).toFixed(2);
+    document.getElementById('durationDisplay').textContent = duration;
 }
 
 function initializeControls() {
