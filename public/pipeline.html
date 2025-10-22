@@ -10,7 +10,10 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <div class="nav-brand">📊 Spectracular.io</div>
+            <div class="nav-brand">
+                <img src="logo.png" alt="Logo">
+                Spectracular.io
+            </div>
             <div class="nav-links">
                 <a href="index.html">Home</a>
                 <a href="visualization.html">Visualization</a>
@@ -25,29 +28,29 @@
             <h2>Filters</h2>
             <div class="add-filter">
                 <select id="filterSelect">
-                    <option value="">-- Select Filter --</option>
-                    <option value="butterworth_lowpass">Butterworth Lowpass</option>
-                    <option value="butterworth_highpass">Butterworth Highpass</option>
-                    <option value="butterworth_bandpass">Butterworth Bandpass</option>
-                    <option value="butterworth_bandstop">Butterworth Bandstop</option>
-                    <option value="savgol">Savitzky-Golay</option>
-                    <option value="median">Median Filter</option>
+                        <option value="">-- Select Filter --</option>
+                        <option value="butterworth_lowpass">Butterworth Lowpass</option>
+                        <option value="butterworth_highpass">Butterworth Highpass</option>
+                        <option value="butterworth_bandpass">Butterworth Bandpass</option>
+                        <option value="butterworth_bandstop">Butterworth Bandstop</option>
+                        <option value="savgol">Savitzky-Golay</option>
+                        <option value="median">Median Filter</option>
                     <option value="notch">Notch (50/60 Hz)</option>
-                </select>
+                    </select>
                 <button onclick="addFilter()">Add</button>
-            </div>
+                </div>
             <div id="filterList" class="filter-list"></div>
-            <div class="info-box">
+                <div class="info-box">
                 Drag filters to reorder. Change parameters to update the plot in real-time.
-            </div>
-        </div>
+                </div>
+                </div>
         <div class="main">
             <div class="charts-container">
                 <div class="chart-box">
                     <div class="chart-label">Raw Signal</div>
                     <div class="chart-wrapper">
                         <canvas id="rawChart"></canvas>
-                    </div>
+                        </div>
                     <div class="controls-row">
                         <button onclick="zoomChart('raw', 'in')">Zoom In</button>
                         <button onclick="zoomChart('raw', 'out')">Zoom Out</button>
@@ -184,9 +187,9 @@
                 data: { 
                     labels: [],
                     datasets: [{ 
-                        label: 'Raw', 
+                        label: 'Raw', git 
                         data: [],
-                        borderColor: '#00d4ff', 
+                        borderColor: '#14786e', 
                         tension: 0, 
                         borderWidth: 1, 
                         pointRadius: 0,
@@ -435,14 +438,25 @@
                     paramsDiv.appendChild(control);
                 });
 
-                div.addEventListener('dragstart', () => draggedIndex = idx);
-                div.addEventListener('dragover', (e) => e.preventDefault());
-                div.addEventListener('drop', () => {
+                div.addEventListener('dragstart', (e) => {
+                    draggedIndex = idx;
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                div.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                });
+                div.addEventListener('drop', (e) => {
+                    e.preventDefault();
                     if (draggedIndex !== null && draggedIndex !== idx) {
                         [filters[draggedIndex], filters[idx]] = [filters[idx], filters[draggedIndex]];
                         renderFilters();
                         updatePlots();
                     }
+                    draggedIndex = null;
+                });
+                div.addEventListener('dragend', () => {
+                    draggedIndex = null;
                 });
             });
         }
